@@ -1,0 +1,33 @@
+{
+  "config": {
+    "data": "C:\\Users\\sumit\\Downloads\\snn-transformer\\data\\pretraining_code.jsonl",
+    "sample_bytes": 10000000,
+    "sequence_length": 64,
+    "batch_size": 8,
+    "steps": 50,
+    "d_model": 64,
+    "num_heads": 4,
+    "seed": 42,
+    "device": "cuda"
+  },
+  "models": {
+    "Astrocyte-Hebbian causal": {
+      "initial_loss": 5.541900634765625,
+      "final_loss": 3.0001704692840576,
+      "loss_decreased": true,
+      "seconds": 40.48938879999332,
+      "peak_vram_mb": 23.6787109375,
+      "validation_loss": 3.2096412943115236,
+      "validation_perplexity": 24.77019691467285
+    },
+    "Dense causal Transformer": {
+      "initial_loss": 5.755869388580322,
+      "final_loss": 3.0293354988098145,
+      "loss_decreased": true,
+      "seconds": 2.863559899997199,
+      "peak_vram_mb": 35.80810546875,
+      "validation_loss": 3.141940709777832,
+      "validation_perplexity": 23.148746490478516
+    }
+  }
+}

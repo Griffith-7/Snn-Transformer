@@ -1,0 +1,127 @@
+{
+  "status": "complete",
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "runs": [
+    {
+      "config": {
+        "seed": 1,
+        "device": "cuda",
+        "epochs": 6,
+        "batch_size": 64,
+        "test_batch_size": 512,
+        "d_model": 128,
+        "num_heads": 4,
+        "num_layers": 1,
+        "v_levels": 1,
+        "train_size": 60000,
+        "test_size": 10000
+      },
+      "models": {
+        "AstroHebbian Pure SNN": {
+          "test_accuracy": 86.87,
+          "train_time_seconds": 397.9094553000032,
+          "peak_vram_mb": 1003.0888671875
+        },
+        "Transformer (dense)": {
+          "test_accuracy": 80.06,
+          "train_time_seconds": 1174.1254718000127,
+          "peak_vram_mb": 1564.69580078125
+        }
+      }
+    },
+    {
+      "config": {
+        "seed": 2,
+        "device": "cuda",
+        "epochs": 6,
+        "batch_size": 64,
+        "test_batch_size": 512,
+        "d_model": 128,
+        "num_heads": 4,
+        "num_layers": 1,
+        "v_levels": 1,
+        "train_size": 60000,
+        "test_size": 10000
+      },
+      "models": {
+        "AstroHebbian Pure SNN": {
+          "test_accuracy": 89.27,
+          "train_time_seconds": 3665.9477609999885,
+          "peak_vram_mb": 1004.0888671875
+        },
+        "Transformer (dense)": {
+          "test_accuracy": 74.31,
+          "train_time_seconds": 1185.0536927999929,
+          "peak_vram_mb": 1564.69580078125
+        }
+      }
+    },
+    {
+      "config": {
+        "seed": 3,
+        "device": "cuda",
+        "epochs": 6,
+        "batch_size": 64,
+        "test_batch_size": 512,
+        "d_model": 128,
+        "num_heads": 4,
+        "num_layers": 1,
+        "v_levels": 1,
+        "train_size": 60000,
+        "test_size": 10000
+      },
+      "models": {
+        "AstroHebbian Pure SNN": {
+          "test_accuracy": 84.32,
+          "train_time_seconds": 416.0066940999968,
+          "peak_vram_mb": 1004.0888671875
+        },
+        "Transformer (dense)": {
+          "test_accuracy": 79.02,
+          "train_time_seconds": 1186.5261847999936,
+          "peak_vram_mb": 1564.69580078125
+        }
+      }
+    }
+  ],
+  "summary": {
+    "AstroHebbian Pure SNN": {
+      "test_accuracy": {
+        "mean": 86.82,
+        "std": 2.4753787588973144,
+        "runs": 3
+      },
+      "train_time_seconds": {
+        "mean": 1493.2879701333295,
+        "std": 1881.6003302108586,
+        "runs": 3
+      },
+      "peak_vram_mb": {
+        "mean": 1003.7555338541666,
+        "std": 0.5773502691896257,
+        "runs": 3
+      }
+    },
+    "Transformer (dense)": {
+      "test_accuracy": {
+        "mean": 77.79666666666667,
+        "std": 3.063989773699208,
+        "runs": 3
+      },
+      "train_time_seconds": {
+        "mean": 1181.901783133333,
+        "std": 6.774608596595179,
+        "runs": 3
+      },
+      "peak_vram_mb": {
+        "mean": 1564.69580078125,
+        "std": 0.0,
+        "runs": 3
+      }
+    }
+  }
+}

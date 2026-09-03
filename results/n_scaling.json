@@ -1,0 +1,59 @@
+{
+  "config": {
+    "sequence_lengths": [
+      784,
+      1568,
+      3136
+    ],
+    "d_model": 128,
+    "num_heads": 4,
+    "batch_size": 1,
+    "mode": "inference",
+    "device": "cuda",
+    "warmup": 3,
+    "steps": 10,
+    "output": "results\\n_scaling.json",
+    "plot": "results\\n_scaling.png"
+  },
+  "results": [
+    {
+      "sequence_length": 784,
+      "models": {
+        "astrohebbian": {
+          "seconds": 0.000882688045501709,
+          "peak_vram_mb": 12.62109375
+        },
+        "dense": {
+          "seconds": 0.0007867392063140869,
+          "peak_vram_mb": 29.814453125
+        }
+      }
+    },
+    {
+      "sequence_length": 1568,
+      "models": {
+        "astrohebbian": {
+          "seconds": 0.0008118271827697754,
+          "peak_vram_mb": 16.8466796875
+        },
+        "dense": {
+          "seconds": 0.002045030403137207,
+          "peak_vram_mb": 89.736328125
+        }
+      }
+    },
+    {
+      "sequence_length": 3136,
+      "models": {
+        "astrohebbian": {
+          "seconds": 0.0009408320426940918,
+          "peak_vram_mb": 25.29833984375
+        },
+        "dense": {
+          "seconds": 0.008110182189941407,
+          "peak_vram_mb": 320.033203125
+        }
+      }
+    }
+  ]
+}
