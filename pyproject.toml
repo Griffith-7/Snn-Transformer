@@ -24,9 +24,9 @@ classifiers = [
 dependencies = ["torch>=2.0"]
 
 [project.urls]
-Homepage = "https://github.com/yourname/astrohebbian"
-Source = "https://github.com/yourname/astrohebbian"
-"Issue Tracker" = "https://github.com/yourname/astrohebbian/issues"
+Homepage = "https://github.com/Griffith-7/Snn-Transformer"
+Source = "https://github.com/Griffith-7/Snn-Transformer"
+"Issue Tracker" = "https://github.com/Griffith-7/Snn-Transformer/issues"
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
