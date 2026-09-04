@@ -12,25 +12,34 @@ class SurrogateHeaviside(torch.autograd.Function):
     """Binary threshold in the forward pass with a fast-sigmoid backward pass."""
 
     @staticmethod
-    def forward(ctx, input):
+    def forward(ctx, input, alpha=10.0):
         ctx.save_for_backward(input)
+        ctx.alpha = alpha
         return (input > 0).to(input.dtype)
 
     @staticmethod
     def backward(ctx, grad_output):
         (input,) = ctx.saved_tensors
-        alpha = 10.0
+        alpha = ctx.alpha
         sigmoid = torch.sigmoid(alpha * input)
-        return grad_output * sigmoid * (1 - sigmoid) * alpha
+        return grad_output * sigmoid * (1 - sigmoid) * alpha, None
 
 
-spike_fn = SurrogateHeaviside.apply
+def spike_fn(x, alpha=10.0):
+    return SurrogateHeaviside.apply(x, alpha)
 
 
 class AstrocyteHebbianAttention(nn.Module):
     """Multi-head spiking linear attention with learnable channel decay."""
 
-    def __init__(self, d_model=128, num_heads=4, v_levels=1):
+    def __init__(
+        self,
+        d_model=128,
+        num_heads=4,
+        v_levels=1,
+        alpha=10.0,
+        learnable_thresholds=False,
+    ):
         super().__init__()
         if d_model <= 0 or num_heads <= 0 or d_model % num_heads != 0:
             raise ValueError("d_model must be positive and divisible by num_heads")
@@ -41,15 +50,21 @@ class AstrocyteHebbianAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = d_model // num_heads
         self.value_levels = int(v_levels)
+        self.alpha = float(alpha)
         self.q_proj = nn.Linear(d_model, d_model)
         self.k_proj = nn.Linear(d_model, d_model)
         self.v_proj = nn.Linear(d_model, d_model)
         self.o_proj = nn.Linear(d_model, d_model)
-        self.register_buffer(
-            "thresholds",
+
+        init_thresholds = (
             torch.arange(1, self.value_levels + 1, dtype=torch.float32)
-            / (self.value_levels + 1),
+            / (self.value_levels + 1)
         )
+        if learnable_thresholds:
+            self.thresholds = nn.Parameter(init_thresholds)
+        else:
+            self.register_buffer("thresholds", init_thresholds)
+
         self.decay_logit = nn.Parameter(torch.empty(d_model).uniform_(5.0, 8.0))
         self.eps = 1e-6
 
@@ -62,14 +77,15 @@ class AstrocyteHebbianAttention(nn.Module):
         if d_model != self.d_model:
             raise ValueError(f"last dimension must be {self.d_model}")
 
-        query = spike_fn(self.q_proj(x))
-        key = spike_fn(self.k_proj(x))
+        query = spike_fn(self.q_proj(x), self.alpha)
+        key = spike_fn(self.k_proj(x), self.alpha)
         value_unit = (torch.tanh(self.v_proj(x)) + 1.0) / 2.0
         if self.value_levels == 1:
-            value = spike_fn(value_unit - self.thresholds[0])
+            value = spike_fn(value_unit - self.thresholds[0], self.alpha)
         else:
             value_spikes = spike_fn(
-                value_unit.unsqueeze(-1) - self.thresholds.view(1, 1, 1, -1)
+                value_unit.unsqueeze(-1) - self.thresholds.view(1, 1, 1, -1),
+                self.alpha,
             )
             value = value_spikes.mean(dim=-1)
 

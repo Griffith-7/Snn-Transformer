@@ -1,7 +1,7 @@
 """Standalone Astrocyte-Hebbian spiking Transformer components."""
 
 from .causal import CausalAstrocyteHebbianAttention
-from .language_model import CausalAstrocyteLanguageModel
+from .language_model import CausalAstrocyteHebbianBlock, CausalAstrocyteLanguageModel
 from .model import (
     AstrocyteHebbianAttention,
     AstrocyteHebbianBlock,
@@ -19,5 +19,6 @@ __all__ = [
     "SurrogateHeaviside",
     "spike_fn",
     "CausalAstrocyteHebbianAttention",
+    "CausalAstrocyteHebbianBlock",
     "CausalAstrocyteLanguageModel",
 ]
