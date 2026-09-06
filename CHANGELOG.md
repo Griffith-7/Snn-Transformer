@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0
+## 0.2.1
 
 - Integrated exact Spike-Time / Implicit Function Theorem (IFT) gradients (`ExactIFTSpike`) alongside surrogate gradients.
 - Added `gradient_mode` parameter (`"surrogate"` vs `"exact"`) across `AstrocyteHebbianAttention`, `SpikingFFN`, `AstrocyteHebbianClassifier`, `CausalAstrocyteHebbianAttention`, and `CausalAstrocyteLanguageModel`.
