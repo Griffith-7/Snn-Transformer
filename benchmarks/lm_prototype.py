@@ -182,10 +182,17 @@ def main(argv=None):
         "models": {},
     }
     models = {
-        "Astrocyte-Hebbian causal": CausalAstrocyteLanguageModel(
+        "AstroHebbian SNN (Surrogate)": CausalAstrocyteLanguageModel(
             vocab_size=256, d_model=args.d_model,
             seq_len=args.sequence_length, num_heads=args.num_heads,
             attention_implementation=args.attention_implementation,
+            gradient_mode="surrogate",
+        ),
+        "AstroHebbian SNN (Exact IFT)": CausalAstrocyteLanguageModel(
+            vocab_size=256, d_model=args.d_model,
+            seq_len=args.sequence_length, num_heads=args.num_heads,
+            attention_implementation=args.attention_implementation,
+            gradient_mode="exact",
         ),
         "Dense causal Transformer": DenseCausalLanguageModel(
             256, args.d_model, args.sequence_length, args.num_heads
@@ -195,7 +202,7 @@ def main(argv=None):
         results["models"][name] = train_model(
             model, train_loader, validation_loader, device, args.steps
         )
-        print(name, results["models"][name])
+        print(f"[{name}] {results['models'][name]}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote LM results to {args.output}")

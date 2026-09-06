@@ -1,0 +1,68 @@
+{
+  "AstroHebbian SNN (Surrogate)": {
+    "final_test_acc": 8.5,
+    "total_time_sec": 1.1020655000029365,
+    "sec_per_epoch": 0.22041310000058728,
+    "peak_vram_mb": 57.31103515625,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 2.359147129058838,
+        "test_acc": 8.0
+      },
+      {
+        "epoch": 2,
+        "train_loss": 2.3337583637237547,
+        "test_acc": 12.0
+      },
+      {
+        "epoch": 3,
+        "train_loss": 2.3258133602142332,
+        "test_acc": 10.5
+      },
+      {
+        "epoch": 4,
+        "train_loss": 2.3161062717437746,
+        "test_acc": 6.0
+      },
+      {
+        "epoch": 5,
+        "train_loss": 2.301978931427002,
+        "test_acc": 8.5
+      }
+    ]
+  },
+  "AstroHebbian SNN (Exact IFT)": {
+    "final_test_acc": 9.5,
+    "total_time_sec": 0.8326194999972358,
+    "sec_per_epoch": 0.16652389999944717,
+    "peak_vram_mb": 57.7685546875,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 2.352932596206665,
+        "test_acc": 7.000000000000001
+      },
+      {
+        "epoch": 2,
+        "train_loss": 2.3157995700836183,
+        "test_acc": 13.0
+      },
+      {
+        "epoch": 3,
+        "train_loss": 2.3270268058776855,
+        "test_acc": 10.0
+      },
+      {
+        "epoch": 4,
+        "train_loss": 2.31905460357666,
+        "test_acc": 10.0
+      },
+      {
+        "epoch": 5,
+        "train_loss": 2.3114242649078367,
+        "test_acc": 9.5
+      }
+    ]
+  }
+}

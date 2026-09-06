@@ -15,16 +15,19 @@ class CausalAstrocyteHebbianAttention(nn.Module):
     and streaming token-by-token processing via explicit state passing.
     """
 
-    def __init__(self, d_model=128, num_heads=4, v_levels=1, alpha=10.0):
+    def __init__(self, d_model=128, num_heads=4, v_levels=1, alpha=10.0, gradient_mode="exact"):
         super().__init__()
         if d_model <= 0 or num_heads <= 0 or d_model % num_heads != 0:
             raise ValueError("d_model must be positive and divisible by num_heads")
         if v_levels != 1:
             raise ValueError("the causal prototype currently supports v_levels=1 only")
+        if gradient_mode not in ("surrogate", "exact", "reciprocal"):
+            raise ValueError("gradient_mode must be 'exact', 'surrogate', or 'reciprocal'")
         self.d_model = d_model
         self.num_heads = num_heads
         self.head_dim = d_model // num_heads
         self.alpha = float(alpha)
+        self.gradient_mode = gradient_mode
         self.q_proj = nn.Linear(d_model, d_model)
         self.k_proj = nn.Linear(d_model, d_model)
         self.v_proj = nn.Linear(d_model, d_model)
@@ -47,13 +50,13 @@ class CausalAstrocyteHebbianAttention(nn.Module):
             raise ValueError("implementation must be 'recurrent' or 'parallel'")
 
         batch_size, sequence_length, _ = x.shape
-        query = spike_fn(self.q_proj(x), self.alpha).view(
+        query = spike_fn(self.q_proj(x), self.alpha, mode=self.gradient_mode).view(
             batch_size, sequence_length, self.num_heads, self.head_dim
         ).transpose(1, 2)
-        key = spike_fn(self.k_proj(x), self.alpha).view(
+        key = spike_fn(self.k_proj(x), self.alpha, mode=self.gradient_mode).view(
             batch_size, sequence_length, self.num_heads, self.head_dim
         ).transpose(1, 2)
-        value = spike_fn((torch.tanh(self.v_proj(x)) + 1.0) / 2.0 - 0.5, self.alpha).view(
+        value = spike_fn((torch.tanh(self.v_proj(x)) + 1.0) / 2.0 - 0.5, self.alpha, mode=self.gradient_mode).view(
             batch_size, sequence_length, self.num_heads, self.head_dim
         ).transpose(1, 2)
 

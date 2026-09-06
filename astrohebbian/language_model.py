@@ -11,12 +11,14 @@ from .model import SpikingFFN
 class CausalAstrocyteHebbianBlock(nn.Module):
     """Pre-norm Transformer block using Causal Astrocyte-Hebbian attention."""
 
-    def __init__(self, d_model=128, num_heads=4, expansion=4, alpha=10.0):
+    def __init__(self, d_model=128, num_heads=4, expansion=4, alpha=10.0, gradient_mode="exact"):
         super().__init__()
         self.norm1 = nn.LayerNorm(d_model)
-        self.attention = CausalAstrocyteHebbianAttention(d_model, num_heads, alpha=alpha)
+        self.attention = CausalAstrocyteHebbianAttention(
+            d_model, num_heads, alpha=alpha, gradient_mode=gradient_mode
+        )
         self.norm2 = nn.LayerNorm(d_model)
-        self.ffn = SpikingFFN(d_model, expansion)
+        self.ffn = SpikingFFN(d_model, expansion, gradient_mode=gradient_mode)
 
     def forward(
         self,
@@ -54,6 +56,7 @@ class CausalAstrocyteLanguageModel(nn.Module):
         expansion=2,
         alpha=10.0,
         attention_implementation="parallel",
+        gradient_mode="exact",
     ):
         super().__init__()
         if vocab_size <= 0 or seq_len <= 0 or num_layers <= 0:
@@ -61,6 +64,9 @@ class CausalAstrocyteLanguageModel(nn.Module):
         self.seq_len = seq_len
         if attention_implementation not in ("recurrent", "parallel"):
             raise ValueError("attention_implementation must be recurrent or parallel")
+        if gradient_mode not in ("surrogate", "exact", "reciprocal"):
+            raise ValueError("gradient_mode must be 'exact', 'surrogate', or 'reciprocal'")
+        self.gradient_mode = gradient_mode
         self.attention_implementation = attention_implementation
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.pos_encoder = nn.Parameter(torch.randn(1, seq_len, d_model) * 0.02)
@@ -71,6 +77,7 @@ class CausalAstrocyteLanguageModel(nn.Module):
                     num_heads=num_heads,
                     expansion=expansion,
                     alpha=alpha,
+                    gradient_mode=gradient_mode,
                 )
                 for _ in range(num_layers)
             ]

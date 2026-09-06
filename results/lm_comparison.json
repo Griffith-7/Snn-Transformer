@@ -1,0 +1,43 @@
+{
+  "config": {
+    "data": "data\\pretraining_code.jsonl",
+    "sample_bytes": 5000000,
+    "sequence_length": 64,
+    "batch_size": 8,
+    "steps": 30,
+    "d_model": 64,
+    "num_heads": 4,
+    "attention_implementation": "parallel",
+    "seed": 42,
+    "device": "cuda"
+  },
+  "models": {
+    "AstroHebbian SNN (Surrogate)": {
+      "initial_loss": 5.58356237411499,
+      "final_loss": 3.826242685317993,
+      "loss_decreased": true,
+      "seconds": 2.379744200006826,
+      "peak_vram_mb": 29.18115234375,
+      "validation_loss": 3.438928576661914,
+      "validation_perplexity": 31.153562545776367
+    },
+    "AstroHebbian SNN (Exact IFT)": {
+      "initial_loss": 5.752158164978027,
+      "final_loss": 3.623586416244507,
+      "loss_decreased": true,
+      "seconds": 1.9931877000053646,
+      "peak_vram_mb": 29.72705078125,
+      "validation_loss": 3.5875451938605227,
+      "validation_perplexity": 36.14523696899414
+    },
+    "Dense causal Transformer": {
+      "initial_loss": 5.7191596031188965,
+      "final_loss": 3.3501968383789062,
+      "loss_decreased": true,
+      "seconds": 1.3843293999962043,
+      "peak_vram_mb": 36.35595703125,
+      "validation_loss": 3.2902595560788406,
+      "validation_perplexity": 26.84983253479004
+    }
+  }
+}
