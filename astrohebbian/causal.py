@@ -1,11 +1,11 @@
 """Causal, state-updating Astrocyte-Hebbian attention."""
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
 
-from .model import spike_fn
+from .model import ExactLinearSpike, ExactSpike, spike_fn
 
 
 class CausalAstrocyteHebbianAttention(nn.Module):
@@ -13,9 +13,16 @@ class CausalAstrocyteHebbianAttention(nn.Module):
 
     Supports both sequence processing ('recurrent' and 'parallel' implementations)
     and streaming token-by-token processing via explicit state passing.
+
+    In exact mode, Q/K/V projections use ``ExactLinearSpike`` (fused linear +
+    spike with IFT backward).  In surrogate mode, falls back to ``nn.Linear``
+    + ``spike_fn``.
     """
 
-    def __init__(self, d_model=128, num_heads=4, v_levels=1, alpha=10.0, gradient_mode="exact"):
+    def __init__(
+        self, d_model=128, num_heads=4, v_levels=1, alpha=10.0,
+        gradient_mode="exact", tau=1.0, theta=0.5,
+    ):
         super().__init__()
         if d_model <= 0 or num_heads <= 0 or d_model % num_heads != 0:
             raise ValueError("d_model must be positive and divisible by num_heads")
@@ -27,10 +34,18 @@ class CausalAstrocyteHebbianAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = d_model // num_heads
         self.alpha = float(alpha)
+        self.tau = float(tau)
+        self.theta = float(theta)
         self.gradient_mode = gradient_mode
-        self.q_proj = nn.Linear(d_model, d_model)
-        self.k_proj = nn.Linear(d_model, d_model)
-        self.v_proj = nn.Linear(d_model, d_model)
+
+        if gradient_mode == "exact":
+            self.q_proj = ExactLinearSpike(d_model, d_model, tau=tau, theta=theta)
+            self.k_proj = ExactLinearSpike(d_model, d_model, tau=tau, theta=theta)
+            self.v_proj = nn.Linear(d_model, d_model)
+        else:
+            self.q_proj = nn.Linear(d_model, d_model)
+            self.k_proj = nn.Linear(d_model, d_model)
+            self.v_proj = nn.Linear(d_model, d_model)
         self.o_proj = nn.Linear(d_model, d_model)
         self.decay_logit = nn.Parameter(torch.empty(d_model).uniform_(5.0, 8.0))
         self.eps = 1e-6
@@ -50,15 +65,37 @@ class CausalAstrocyteHebbianAttention(nn.Module):
             raise ValueError("implementation must be 'recurrent' or 'parallel'")
 
         batch_size, sequence_length, _ = x.shape
-        query = spike_fn(self.q_proj(x), self.alpha, mode=self.gradient_mode).view(
-            batch_size, sequence_length, self.num_heads, self.head_dim
-        ).transpose(1, 2)
-        key = spike_fn(self.k_proj(x), self.alpha, mode=self.gradient_mode).view(
-            batch_size, sequence_length, self.num_heads, self.head_dim
-        ).transpose(1, 2)
-        value = spike_fn((torch.tanh(self.v_proj(x)) + 1.0) / 2.0 - 0.5, self.alpha, mode=self.gradient_mode).view(
-            batch_size, sequence_length, self.num_heads, self.head_dim
-        ).transpose(1, 2)
+
+        if self.gradient_mode == "exact":
+            query = self.q_proj(x).view(
+                batch_size, sequence_length, self.num_heads, self.head_dim
+            ).transpose(1, 2)
+            key = self.k_proj(x).view(
+                batch_size, sequence_length, self.num_heads, self.head_dim
+            ).transpose(1, 2)
+            value = ExactSpike.apply(
+                (torch.tanh(self.v_proj(x)) + 1.0) / 2.0,
+                self.tau, 0.5,
+            ).view(
+                batch_size, sequence_length, self.num_heads, self.head_dim
+            ).transpose(1, 2)
+        else:
+            query = spike_fn(
+                self.q_proj(x), self.alpha, mode=self.gradient_mode,
+            ).view(
+                batch_size, sequence_length, self.num_heads, self.head_dim
+            ).transpose(1, 2)
+            key = spike_fn(
+                self.k_proj(x), self.alpha, mode=self.gradient_mode,
+            ).view(
+                batch_size, sequence_length, self.num_heads, self.head_dim
+            ).transpose(1, 2)
+            value = spike_fn(
+                (torch.tanh(self.v_proj(x)) + 1.0) / 2.0 - 0.5,
+                self.alpha, mode=self.gradient_mode,
+            ).view(
+                batch_size, sequence_length, self.num_heads, self.head_dim
+            ).transpose(1, 2)
 
         decay = torch.sigmoid(self.decay_logit).view(
             1, self.num_heads, self.head_dim

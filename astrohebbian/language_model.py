@@ -1,6 +1,7 @@
 """Small causal language-model prototype using the causal attention module."""
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
+
 import torch
 import torch.nn as nn
 
@@ -11,14 +12,17 @@ from .model import SpikingFFN
 class CausalAstrocyteHebbianBlock(nn.Module):
     """Pre-norm Transformer block using Causal Astrocyte-Hebbian attention."""
 
-    def __init__(self, d_model=128, num_heads=4, expansion=4, alpha=10.0, gradient_mode="exact"):
+    def __init__(
+        self, d_model=128, num_heads=4, expansion=4, alpha=10.0,
+        gradient_mode="exact", tau=1.0, theta=0.5,
+    ):
         super().__init__()
         self.norm1 = nn.LayerNorm(d_model)
         self.attention = CausalAstrocyteHebbianAttention(
-            d_model, num_heads, alpha=alpha, gradient_mode=gradient_mode
+            d_model, num_heads, alpha=alpha, gradient_mode=gradient_mode, tau=tau, theta=theta
         )
         self.norm2 = nn.LayerNorm(d_model)
-        self.ffn = SpikingFFN(d_model, expansion, gradient_mode=gradient_mode)
+        self.ffn = SpikingFFN(d_model, expansion, gradient_mode=gradient_mode, tau=tau, theta=theta)
 
     def forward(
         self,
@@ -57,6 +61,8 @@ class CausalAstrocyteLanguageModel(nn.Module):
         alpha=10.0,
         attention_implementation="parallel",
         gradient_mode="exact",
+        tau=1.0,
+        theta=0.5,
     ):
         super().__init__()
         if vocab_size <= 0 or seq_len <= 0 or num_layers <= 0:
@@ -78,6 +84,8 @@ class CausalAstrocyteLanguageModel(nn.Module):
                     expansion=expansion,
                     alpha=alpha,
                     gradient_mode=gradient_mode,
+                    tau=tau,
+                    theta=theta,
                 )
                 for _ in range(num_layers)
             ]

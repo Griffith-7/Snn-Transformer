@@ -3,10 +3,10 @@ Tests for AstroHebbian v2 core enhancements.
 """
 import torch
 import torch.nn as nn
+
 from astrohebbian import (
     AstrocyteHebbianAttention,
     CausalAstrocyteHebbianAttention,
-    CausalAstrocyteHebbianBlock,
     CausalAstrocyteLanguageModel,
     spike_fn,
 )
