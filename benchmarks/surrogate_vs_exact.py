@@ -106,7 +106,12 @@ def main():
         print(f"\n--- Training {name} ---")
         metrics = train_eval_classifier(model, train_loader, test_loader, device, epochs=args.epochs)
         results[name] = metrics
-        print(f"Final Test Acc: {metrics['final_test_acc']:.2f}% | Time: {metrics['total_time_sec']:.2f}s ({metrics['sec_per_epoch']:.2f}s/epoch) | VRAM: {metrics['peak_vram_mb']:.1f} MB")
+        print(
+            f"Final Test Acc: {metrics['final_test_acc']:.2f}% | "
+            f"Time: {metrics['total_time_sec']:.2f}s "
+            f"({metrics['sec_per_epoch']:.2f}s/epoch) | "
+            f"VRAM: {metrics['peak_vram_mb']:.1f} MB"
+        )
         
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")

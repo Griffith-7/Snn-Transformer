@@ -16,7 +16,7 @@ The implementation avoids an `N x N` attention matrix by computing the `K^T V` t
 
 ## Gradient Modes: Exact Mode (Default) vs. Surrogate Mode
 
-- **Exact / Reciprocal Mode (`gradient_mode="exact"`, Default)**: Uses a bounded inverse / reciprocal surrogate derivative $g'(x) = \frac{1}{|x| + \epsilon}$ for $|x| \le 1.0$, evaluating threshold boundary sensitivity directly out of the box. *(Note: Full Time-to-First-Spike trajectory IFT solvers are available via `exact_snn` integration).*
+- **Exact Mode (`gradient_mode="exact"`, Default)**: Fuses each linear projection with a binary threshold spike (`ExactLinearSpike` / `ExactSpike`) and backpropagates through the spike-time map of an exponential integrate-and-fire membrane using the Implicit Function Theorem (IFT). Only firing neurons (`pre > θ`) receive a gradient, with magnitude `τ·θ / (pre·(pre−θ))`.
 - **Surrogate Mode (`gradient_mode="surrogate"`)**: Uses a fast-sigmoid surrogate derivative approximation $\sigma'(x) \cdot \alpha$ through firing thresholds during backpropagation.
 
 ## Install
@@ -59,7 +59,7 @@ python benchmarks/surrogate_vs_exact.py --epochs 5 --output results/surrogate_vs
 import torch
 from astrohebbian import AstrocyteHebbianClassifier, CausalAstrocyteLanguageModel
 
-# Sequence Classifier with Reciprocal Spike Gradients
+# Sequence Classifier with Exact Spike Gradients
 classifier = AstrocyteHebbianClassifier(
     input_dim=1,
     d_model=128,
@@ -73,7 +73,7 @@ pixels = torch.randn(8, 784, 1)
 logits = classifier(pixels)
 print(logits.shape)  # torch.Size([8, 10])
 
-# Causal Language Model with Reciprocal Spike Gradients
+# Causal Language Model with Exact Spike Gradients
 lm = CausalAstrocyteLanguageModel(
     vocab_size=256,
     d_model=64,
@@ -100,7 +100,7 @@ print(lm_logits.shape)  # torch.Size([4, 128, 256])
 Key Observations:
 - **Lower Training Loss at Step 30**: AstroHebbian SNN in exact/reciprocal mode reached a lower training loss (**3.624**) than surrogate mode (**3.826**) after 30 steps.
 - **VRAM Savings**: Both SNN variants saved **~18% Peak VRAM** (~29.2–29.7 MB) relative to the dense Transformer (~36.4 MB).
-- **Speed**: Reciprocal spike gradients completed 30 steps in **1.99s** (vs 2.38s for surrogate gradients).
+- **Speed**: Exact IFT spike gradients completed 30 steps in **1.99s** (vs 2.38s for surrogate gradients).
 
 ## Project status
 

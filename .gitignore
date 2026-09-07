@@ -8,4 +8,5 @@ data/
 checkpoints/
 dist/
 build/
+results/
 

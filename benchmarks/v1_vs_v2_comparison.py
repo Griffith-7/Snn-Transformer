@@ -2,8 +2,10 @@
 Comparison benchmark suite: AstroHebbian v1 vs v2.
 """
 import time
+
 import torch
 import torch.nn as nn
+
 from astrohebbian import (
     AstrocyteHebbianAttention,
     CausalAstrocyteHebbianAttention,
@@ -33,7 +35,6 @@ def benchmark_numerical_stability():
         
         # v1 implementation logic simulation
         batch_size, sequence_length, _ = x.shape
-        query = attn_v2.q_proj(x).view(batch_size, sequence_length, num_heads, d_model // num_heads).transpose(1, 2)
         key = attn_v2.k_proj(x).view(batch_size, sequence_length, num_heads, d_model // num_heads).transpose(1, 2)
         value = attn_v2.v_proj(x).view(batch_size, sequence_length, num_heads, d_model // num_heads).transpose(1, 2)
         decay = torch.sigmoid(attn_v2.decay_logit).view(1, num_heads, d_model // num_heads).to(x.dtype)
@@ -43,7 +44,9 @@ def benchmark_numerical_stability():
         inverse_decay = decay.reciprocal()
         powers_v1 = inverse_decay.unsqueeze(-2).pow(positions)
         pair = key.unsqueeze(-1) * value.unsqueeze(-2)
-        trace_v1 = torch.cumsum(pair * powers_v1.unsqueeze(-1), dim=2) * decay.unsqueeze(-2).pow(positions).unsqueeze(-1)
+        trace_v1 = torch.cumsum(pair * powers_v1.unsqueeze(-1), dim=2) * decay.unsqueeze(-2).pow(
+            positions
+        ).unsqueeze(-1)
         v1_has_nans = not torch.isfinite(trace_v1).all().item()
 
         # v2 execution
@@ -138,7 +141,7 @@ def benchmark_expressivity_learnable_thresholds():
         opt_c2.step()
         loss_v2 = loss.item()
 
-    print(f"Final loss after 10 optimization steps on toy sequence task:")
+    print("Final loss after 10 optimization steps on toy sequence task:")
     print(f"  v1 Fixed Thresholds     : {loss_v1:.4f}")
     print(f"  v2 Learnable Thresholds : {loss_v2:.4f}")
 
