@@ -1,16 +1,28 @@
 # Astrocyte-Hebbian Spiking Transformer Plugin
 
-A standalone PyTorch plugin containing Astrocyte-Hebbian spiking linear-attention components with support for both **Surrogate Gradients** and **Exact SNN (Implicit Function Theorem / IFT) Gradients**.
+A standalone PyTorch **plugin** (not a framework) providing Astrocyte-Hebbian spiking linear-attention components with support for both **Surrogate Gradients** and **Exact SNN (Implicit Function Theorem / IFT) Gradients**.
 
-## Scope
+## What this is
 
-This is a focused spiking model plugin providing:
+This package is a **drop-in set of reusable `nn.Module` components**. You import them and plug them into *your own* model — you stay in control of the architecture. It does not define a training loop or force a whole model on you.
 
-- `AstrocyteHebbianAttention`: multi-head linear attention using binary Q/K/V activations with configurable gradient mode (`"surrogate"` or `"exact"`).
-- `AstrocyteHebbianBlock`: pre-norm Transformer-style block with a spiking FFN.
-- `AstrocyteHebbianClassifier`: ready-to-train sequence classifier.
-- `CausalAstrocyteLanguageModel`: byte-level causal language model with streaming recurrence.
+### The plugin API (the building blocks you plug in)
+
+These are the core, self-contained modules:
+
+- `AstrocyteHebbianAttention`: multi-head linear attention using binary Q/K/V activations with configurable gradient mode (`"surrogate"` or `"exact"`). `forward(x) -> x`, same shape in/out.
+- `AstrocyteHebbianBlock`: pre-norm Transformer-style block (`attention` + spiking `SpikingFFN`). The single unit you'd drop into any transformer. `forward(x) -> x`.
+- `SpikingFFN`: feed-forward with a binary hidden activation.
+- `ExactLinearSpike` / `ExactSpike`: fused linear + binary-spike layers with exact IFT gradients — drop-in replacements for `nn.Linear` + a spike function.
 - `spike_fn`: binary Heaviside threshold supporting fast-sigmoid surrogate gradients and exact closed-form IFT gradients.
+- `CausalAstrocyteHebbianAttention`: causal/streaming variant with a recurrent decayed Hebbian state.
+
+### Example wrappers (built on top of the plugin)
+
+These are full models assembled from the plugin components — useful starting points, not the intended way to use the package:
+
+- `AstrocyteHebbianClassifier`: ready-to-train sequence classifier (embedding + blocks + head).
+- `CausalAstrocyteLanguageModel`: byte-level causal language model with streaming recurrence.
 
 The implementation avoids an `N x N` attention matrix by computing the `K^T V` trace. It uses ordinary dense PyTorch tensors for projections, normalization, residual paths, and training.
 
@@ -55,8 +67,25 @@ python benchmarks/surrogate_vs_exact.py --epochs 5 --output results/surrogate_vs
 
 ## Example
 
+### Plug the block into any transformer (plugin usage)
+
 ```python
 import torch
+from astrohebbian import AstrocyteHebbianAttention, AstrocyteHebbianBlock
+
+# Drop-in attention: same shape in / out
+attn = AstrocyteHebbianAttention(d_model=128, num_heads=4, gradient_mode="exact")
+out = attn(torch.randn(2, 64, 128))          # torch.Size([2, 64, 128])
+
+# Or a full pre-norm block (attention + spiking FFN) — stack these with your own
+# residuals, norms, embeddings, and head however you like.
+block = AstrocyteHebbianBlock(d_model=128, num_heads=4, expansion=4, gradient_mode="exact")
+out = block(torch.randn(2, 64, 128))         # torch.Size([2, 64, 128])
+```
+
+### Ready-made wrappers (built from the plugin)
+
+```python
 from astrohebbian import AstrocyteHebbianClassifier, CausalAstrocyteLanguageModel
 
 # Sequence Classifier with Exact Spike Gradients

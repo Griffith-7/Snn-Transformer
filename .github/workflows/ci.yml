@@ -19,8 +19,8 @@ jobs:
       - name: Install package and test dependencies
         run: python -m pip install -e ".[test,quality]"
       - name: Lint
-        run: python -m ruff check astrohebbian tests benchmarks
+        run: python -m ruff check astrohebbian tests benchmarks examples
       - name: Compile source
-        run: python -m compileall -q astrohebbian tests
+        run: python -m compileall -q astrohebbian tests examples
       - name: Run tests
         run: python -m pytest -q
