@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+
+- Repositioned package as a drop-in PyTorch plugin: added explicit "plugin API vs example wrappers" framing to the README and examples.
+- Added `examples/` directory with minimal plugin-usage and wrapper-usage scripts.
+- Added `examples/` to CI lint and compile-all steps so they stay covered.
+- README now leads with drop-in `AstrocyteHebbianAttention` / `AstrocyteHebbianBlock` usage inside a user's own model.
+
 ## 0.2.2
 
 - Corrected the exact IFT gradient to the true membrane spike-time derivative `τ·θ / (pre·(pre−θ))` for `ExactSpike` and `ExactLinearSpike`. Previously exact mode used an approximate reciprocal surrogate.
